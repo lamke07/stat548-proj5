@@ -106,8 +106,9 @@ BayesOpt <- function(data_x, data_y, f_obj, par_bounds,
                      reg_model = ~1, cor_family = "PowerExponential",
                      bayesian_fit = FALSE, bayesian_method = "Hybrid", bayesian_predict = TRUE,
                      n_starts = 20, max_iter = 50, improvement_threshold = 0.01){
-  # Track EI calculations
+  # Track EI calculations and improvements
   EI_results <- tibble()
+  improvement_tracker <- vector("numeric")
   
   while(1){
     print(paste("Iteration", nrow(EI_results)))
@@ -122,9 +123,12 @@ BayesOpt <- function(data_x, data_y, f_obj, par_bounds,
     gasp_fit <- next_points$gasp_fit
     EI_results <- bind_rows(EI_results, point_query)
     
+    improvement_percent <- abs(point_query$EI/min(gasp_fit$y))
+    improvement_tracker <- c(improvement_tracker, improvement_percent)
+    
     # Check if we are expected to improve more than the threshold
-    if(point_query$EI/min(gasp_fit$y) < improvement_threshold) {
-      print(paste0("Expected improvement too small, stopping now: ", 100*round(point_query$EI/min(gasp_fit$y), 4), "%"))
+    if(improvement_percent < improvement_threshold) {
+      print(paste0("Expected improvement too small, stopping now: ", 100*round(improvement_percent, 4), "%"))
       break
     }
     if(nrow(EI_results) >= max_iter) {
@@ -132,7 +136,7 @@ BayesOpt <- function(data_x, data_y, f_obj, par_bounds,
       break
     }
     
-    print(paste0("Expected improvement is ", 100*round(point_query$EI/min(gasp_fit$y), 4), "%... testing more points"))
+    print(paste0("Expected improvement is ", 100*round(improvement_percent, 4), "%... testing more points"))
     
     # Append queried points and new function evaluation
     data_x <- bind_rows(data_x, select(point_query, -EI))
@@ -140,8 +144,51 @@ BayesOpt <- function(data_x, data_y, f_obj, par_bounds,
   }
   
   return(list(
+    no_eval = nrow(EI_results) - 1,
     data = bind_cols(data_x, data_y),
     EI_results = EI_results,
-    final_fit = gasp_fit
+    improvement_tracker = improvement_tracker,
+    final_fit = gasp_fit,
+    par_setup = list(
+      reg_model = deparse1(reg_model), cor_family = cor_family,
+      bayesian_fit = bayesian_fit, bayesian_method = bayesian_method, bayesian_predict = bayesian_predict,
+      n_starts = n_starts, max_iter = max_iter, improvement_threshold = improvement_threshold
+    )
   ))
 }
+
+BayesOpt_timed <- function(data_x, data_y, f_obj, par_bounds,
+                           reg_model = ~1, cor_family = "PowerExponential",
+                           bayesian_fit = FALSE, bayesian_method = "Hybrid", bayesian_predict = TRUE,
+                           n_starts = 20, max_iter = 50, improvement_threshold = 0.01){
+  # This is a timed version of BayesOpt for benchmarking purposes
+  
+  res_time <- system.time(
+    res <- BayesOpt(data_x, data_y, f_obj, par_bounds,
+                    reg_model, cor_family,
+                    bayesian_fit, bayesian_method, bayesian_predict,
+                    n_starts, max_iter, improvement_threshold)
+  )
+  
+  no_evals_stop <- which(res$improvement_tracker < 0.01)[1] - 1
+  
+  out_summary <- data.frame(
+    eval_stop = no_evals_stop + 1,
+    eval_stop_full = length(res$improvement_tracker),
+    min_y_stop = min(res$final_fit$y[1:(nrow(data_x) + no_evals_stop)]),
+    eval_time = res_time[3],
+    reg_model = deparse1(reg_model), cor_family = cor_family,
+    bayesian_fit = bayesian_fit, bayesian_method = bayesian_method, bayesian_predict = bayesian_predict,
+    n_starts = n_starts, max_iter = max_iter, improvement_threshold = improvement_threshold
+    )
+  
+  return(list(out_summary = out_summary,
+              y = res$final_fit$y,
+              improvement_tracker = res$improvement_tracker))
+}
+
+
+
+
+
+
