@@ -160,7 +160,8 @@ BayesOpt <- function(data_x, data_y, f_obj, par_bounds,
 BayesOpt_timed <- function(data_x, data_y, f_obj, par_bounds,
                            reg_model = ~1, cor_family = "PowerExponential",
                            bayesian_fit = FALSE, bayesian_method = "Hybrid", bayesian_predict = TRUE,
-                           n_starts = 20, max_iter = 50, improvement_threshold = 0.01){
+                           n_starts = 20, max_iter = 50, improvement_threshold = 0.01,
+                           run_nr){
   # This is a timed version of BayesOpt for benchmarking purposes
   
   res_time <- system.time(
@@ -173,6 +174,7 @@ BayesOpt_timed <- function(data_x, data_y, f_obj, par_bounds,
   no_evals_stop <- which(res$improvement_tracker < 0.01)[1] - 1
   
   out_summary <- data.frame(
+    run_nr = run_nr,
     eval_stop = no_evals_stop + 1,
     eval_stop_full = length(res$improvement_tracker),
     min_y_stop = min(res$final_fit$y[1:(nrow(data_x) + no_evals_stop)]),
