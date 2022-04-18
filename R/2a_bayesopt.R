@@ -27,7 +27,7 @@ colnames(par_bounds_x) <- c("lower", "upper")
 bayesopt_res <- BayesOpt(
   data_x = select(branin_data, -y), data_y = select(branin_data, y),  f_obj = branin,
   reg_model = ~1, cor_family = "PowerExponential",
-  par_bounds = par_bounds, n_starts = 100, improvement_threshold = 0.01
+  par_bounds = par_bounds_x, n_starts = 100, improvement_threshold = 0.01
 )
 
 print(min(bayesopt_res$data$y)/branin(9.42478, 2.475) - 1)
