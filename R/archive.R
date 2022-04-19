@@ -132,3 +132,33 @@ names(gasp_fit)
 names(gasp_fit$GaSP_Model)
 
 
+
+aggregate_percs(branin_res_freq, y_min = branin_min, perc = 0.01, no_design_points = 21)
+
+length(aggregate_percs(branin_res_freq, y_min = branin_min, perc = 0.01, no_design_points = 21))
+length(aggregate_percs(branin_res_bayes, y_min = branin_min, perc = 0.01, no_design_points = 21))
+
+purrr::map(branin_res_freq, ~purrr::map_lgl(.x, ~is_null(.x$error))) %>%
+  unlist()
+
+branin_res_freq[[7]]
+
+# purrr::map_lgl(purrr::map(branin_res_freq[[7]], "error"), is_null)
+# 
+# purrr::map(branin_res_freq, ~purrr::map_dbl(.x, ~perc_threshold(.x$result$y, y_min = branin_min, perc = 0.01, no_design_points = 21))) %>%
+#   unlist()
+# 
+# perc_threshold(branin_res_freq[[1]][[1]]$result$y, branin_min, perc = 0.01)
+# 
+# purrr::map(branin_res_bayes, ~purrr::map(.x, ~.x$result$y))
+# purrr::map(branin_res_freq, ~purrr::map_dbl(.x, ~perc_threshold(.x$result$improvement_tracker)))
+# 
+# purrr::map(branin_res_freq, ~round(.x$result$improvement_tracker, 6))
+# 
+# perc <- 0.01
+# x1 <- branin_res_freq[[1]][[1]]$result$improvement_tracker
+# x <- branin_res_freq[[1]][[2]]$result$y
+# # abs((min(x) - branin_min)/branin_min)
+# 
+# 
+# 
