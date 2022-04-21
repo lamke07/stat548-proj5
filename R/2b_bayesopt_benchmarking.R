@@ -68,7 +68,7 @@ benchmark_bayesian_BayesOpt <- function(data_x, data_y, f_obj, par_bounds, par_B
 }
 
 ################################################################################
-no_of_BayesOpt <- 1
+no_of_BayesOpt <- 10
 ################################################################################
 data_select <- branin_data
 f_obj <- branin
@@ -89,14 +89,6 @@ branin_res_bayes <- purrr::map(1:no_of_BayesOpt,
                                         par_bounds = par_bounds_x, par_BayesOpt = par_bayesian_BayesOpt_split, run_nr = .x))
 
 saveRDS(branin_res_bayes, here("output", "branin_res_bayes.rds"))
-
-# purrr::map_df(res_freq, ~purrr::map_df(.x, ~.x$result$out_summary))
-# purrr::map_df(x2, ~purrr::map_df(.x, ~.x$result$out_summary))
-# 
-# purrr::map_df(x1, ~.x$result$out_summary)
-
-# purrr::map(x, ~.x$result$y)
-# purrr::map(x, ~round(.x$result$improvement_tracker, 6))
 
 ################################################################################
 data_select <- goldpr_data

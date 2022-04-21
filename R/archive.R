@@ -162,3 +162,177 @@ branin_res_freq[[7]]
 # 
 # 
 # 
+
+
+branin_res %>%
+  group_by(cor_family, bayesian_fit, bayesian_method) %>%
+  mutate(no_perc_ind = sum(perc_ind > 0, na.rm = TRUE),
+         no_runs = n()) %>%
+  summarise(across(c(no_runs, eval_stop, eval_stop_full, min_y_stop, min_y_stop_perc, no_perc_ind, perc_ind, eval_time), median, na.rm = TRUE)) %>%
+  ungroup() %>%
+  transmute(cor_family = cor_family,
+            bayesian_fit = bayesian_fit,
+            bayesian_method = bayesian_method,
+            no_runs = paste0(no_runs_median, " (", no_runs_q0.25, " - ", no_runs_q0.75, ")"),
+            eval_stop = paste0(eval_stop_median, " (", eval_stop_q0.25, " - ", eval_stop_q0.75, ")"),
+            eval_stop_full = paste0(eval_stop_full_median, " (", eval_stop_full_q0.25, " - ", eval_stop_full_q0.75, ")"),
+            no_perc_ind = paste0(no_perc_ind_median, " (", no_perc_ind_q0.25, " - ", no_perc_ind_q0.75, ")"),
+            perc_ind = paste0(perc_ind_median, " (", perc_ind_q0.25, " - ", perc_ind_q0.75, ")"),
+            eval_time = paste0(scales::comma(eval_time_median, accuracy = 0.1), " (", scales::comma(eval_time_q0.25, accuracy = 0.1), " - ", scales::comma(eval_time_q0.75, accuracy = 0.1), ")"),
+            min_y_stop = paste0(scales::comma(min_y_stop_median, accuracy = 0.001), " (", scales::comma(min_y_stop_q0.25, accuracy = 0.001), " - ", scales::comma(min_y_stop_q0.75, accuracy = 0.001), ")"),
+            min_y_stop_perc = paste0(scales::percent(min_y_stop_perc_median, accuracy = 0.01), " (", scales::comma(min_y_stop_perc_q0.25, accuracy = 0.01), " - ", scales::comma(min_y_stop_perc_q0.75, accuracy = 0.01), ")"),
+            # (c(no_runs, eval_stop, eval_stop_full, no_perc_ind, perc_ind),
+            #        ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")"))
+  ) %>%
+  arrange(bayesian_fit)
+
+goldpr_res %>%
+  group_by(cor_family, bayesian_fit, bayesian_method) %>%
+  mutate(no_perc_ind = sum(perc_ind > 0, na.rm = TRUE),
+         no_runs = n()) %>%
+  summarise(across(c(no_runs, eval_stop, eval_stop_full, min_y_stop, min_y_stop_perc, no_perc_ind, perc_ind, eval_time), median, na.rm = TRUE)) %>%
+  ungroup() %>%
+  transmute(cor_family = cor_family,
+            bayesian_fit = bayesian_fit,
+            bayesian_method = bayesian_method,
+            no_runs = paste0(no_runs_median, " (", no_runs_q0.25, " - ", no_runs_q0.75, ")"),
+            eval_stop = paste0(eval_stop_median, " (", eval_stop_q0.25, " - ", eval_stop_q0.75, ")"),
+            eval_stop_full = paste0(eval_stop_full_median, " (", eval_stop_full_q0.25, " - ", eval_stop_full_q0.75, ")"),
+            no_perc_ind = paste0(no_perc_ind_median, " (", no_perc_ind_q0.25, " - ", no_perc_ind_q0.75, ")"),
+            perc_ind = paste0(perc_ind_median, " (", perc_ind_q0.25, " - ", perc_ind_q0.75, ")"),
+            eval_time = paste0(scales::comma(eval_time_median, accuracy = 0.1), " (", scales::comma(eval_time_q0.25, accuracy = 0.1), " - ", scales::comma(eval_time_q0.75, accuracy = 0.1), ")"),
+            min_y_stop = paste0(scales::comma(min_y_stop_median, accuracy = 0.001), " (", scales::comma(min_y_stop_q0.25, accuracy = 0.001), " - ", scales::comma(min_y_stop_q0.75, accuracy = 0.001), ")"),
+            min_y_stop_perc = paste0(scales::percent(min_y_stop_perc_median, accuracy = 0.01), " (", scales::comma(min_y_stop_perc_q0.25, accuracy = 0.01), " - ", scales::comma(min_y_stop_perc_q0.75, accuracy = 0.01), ")"),
+            # (c(no_runs, eval_stop, eval_stop_full, no_perc_ind, perc_ind),
+            #        ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")"))
+  ) %>%
+  arrange(bayesian_fit)
+
+
+
+################################################################################
+
+# Produce summary tables
+branin_res %>%
+  group_by(cor_family, bayesian_fit, bayesian_method) %>%
+  mutate(no_perc_ind = sum(perc_ind > 0, na.rm = TRUE),
+         no_runs = n()) %>%
+  summarise(across(c(group_id, no_runs, eval_stop, eval_stop_full, min_y_stop, min_y_stop_perc, no_perc_ind, perc_ind, eval_time), 
+                   # ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")")
+                   list(median = ~median(.x, na.rm = TRUE),
+                        q0.25 = ~quantile(.x, .25, na.rm = TRUE),
+                        q0.75 = ~quantile(.x, .75, na.rm = TRUE)
+                   )
+  )) %>%
+  ungroup() %>%
+  transmute(group_id = group_id_median,
+            cor_family = cor_family,
+            bayesian_fit = bayesian_fit,
+            bayesian_method = bayesian_method,
+            no_runs = no_runs_median,
+            eval_stop = paste0(scales::comma(eval_stop_median, accuracy = 0.1), " (", scales::comma(eval_stop_q0.25, accuracy = 0.1), "-", scales::comma(eval_stop_q0.75, accuracy = 0.1), ")"),
+            eval_stop_full = paste0(scales::comma(eval_stop_full_median, accuracy = 0.1), " (", scales::comma(eval_stop_full_q0.25, accuracy = 0.1), "-", scales::comma(eval_stop_full_q0.75, accuracy = 0.1), ")"),
+            no_perc_ind = paste0(no_perc_ind_median, " (", no_perc_ind_q0.25, " - ", no_perc_ind_q0.75, ")"),
+            perc_ind = paste0(perc_ind_median, " (", perc_ind_q0.25, "-", perc_ind_q0.75, ")"),
+            eval_time = paste0(scales::comma(eval_time_median, accuracy = 0.1), " (", scales::comma(eval_time_q0.25, accuracy = 0.1), "-", scales::comma(eval_time_q0.75, accuracy = 0.1), ")"),
+            min_y_stop = paste0(scales::comma(min_y_stop_median, accuracy = 0.001), " (", scales::comma(min_y_stop_q0.25, accuracy = 0.001), "-", scales::comma(min_y_stop_q0.75, accuracy = 0.001), ")"),
+            min_y_stop_perc = paste0(scales::percent(min_y_stop_perc_median, accuracy = 0.1), " (", scales::percent(min_y_stop_perc_q0.25, accuracy = 0.1), "-", scales::percent(min_y_stop_perc_q0.75, accuracy = 0.1), ")"),
+            # (c(no_runs, eval_stop, eval_stop_full, no_perc_ind, perc_ind),
+            #        ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")"))
+  ) %>%
+  arrange(bayesian_fit) %>%
+  mutate(bayesian_method = ifelse(bayesian_fit == FALSE, "-", bayesian_method)) %>%
+  dplyr::select(Correlation = cor_family,
+                # `Bayesian Fit` = bayesian_fit,
+                `Bayesian Method` = bayesian_method,
+                # `Type` = group_id,
+                #`#successful runs (/10)` = no_runs,
+                Runtime = eval_time,
+                `#Eval. until first stop` = eval_stop,
+                `#Eval. until second stop` = eval_stop_full,
+                `Value of f at first stop` = min_y_stop,
+                `% Error at first stop` = min_y_stop_perc
+  ) %>%
+  readr::write_csv(here("output", "branin_summary.csv"))
+
+goldpr_res %>%
+  group_by(cor_family, bayesian_fit, bayesian_method) %>%
+  mutate(no_perc_ind = sum(perc_ind > 0, na.rm = TRUE),
+         no_runs = n()) %>%
+  summarise(across(c(group_id, no_runs, eval_stop, eval_stop_full, min_y_stop, min_y_stop_perc, no_perc_ind, perc_ind, eval_time), 
+                   # ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")")
+                   list(median = ~median(.x, na.rm = TRUE),
+                        q0.25 = ~quantile(.x, .25, na.rm = TRUE),
+                        q0.75 = ~quantile(.x, .75, na.rm = TRUE)
+                   )
+  )) %>%
+  ungroup() %>%
+  transmute(group_id = group_id_median,
+            cor_family = cor_family,
+            bayesian_fit = bayesian_fit,
+            bayesian_method = bayesian_method,
+            no_runs = no_runs_median,
+            eval_stop = paste0(scales::comma(eval_stop_median, accuracy = 0.01), " (", scales::comma(eval_stop_q0.25, accuracy = 0.01), " - ", scales::comma(eval_stop_q0.75, accuracy = 0.01), ")"),
+            eval_stop_full = paste0(scales::comma(eval_stop_full_median, accuracy = 0.01), " (", scales::comma(eval_stop_full_q0.25, accuracy = 0.01), " - ", scales::comma(eval_stop_full_q0.75, accuracy = 0.01), ")"),
+            no_perc_ind = paste0(no_perc_ind_median, " (", no_perc_ind_q0.25, " - ", no_perc_ind_q0.75, ")"),
+            perc_ind = paste0(perc_ind_median, " (", perc_ind_q0.25, " - ", perc_ind_q0.75, ")"),
+            eval_time = paste0(scales::comma(eval_time_median, accuracy = 0.1), " (", scales::comma(eval_time_q0.25, accuracy = 0.1), " - ", scales::comma(eval_time_q0.75, accuracy = 0.1), ")"),
+            min_y_stop = paste0(scales::comma(min_y_stop_median, accuracy = 0.001), " (", scales::comma(min_y_stop_q0.25, accuracy = 0.001), " - ", scales::comma(min_y_stop_q0.75, accuracy = 0.001), ")"),
+            min_y_stop_perc = paste0(scales::percent(min_y_stop_perc_median, accuracy = 0.01), " (", scales::percent(min_y_stop_perc_q0.25, accuracy = 0.01), " - ", scales::percent(min_y_stop_perc_q0.75, accuracy = 0.01), ")"),
+            # (c(no_runs, eval_stop, eval_stop_full, no_perc_ind, perc_ind),
+            #        ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")"))
+  ) %>%
+  arrange(bayesian_fit) %>%
+  dplyr::select(#Correlation = cor_family,
+    #`Bayesian Fit` = bayesian_fit,
+    #`Bayesian Method` = bayesian_method,
+    `Type` = group_id,
+    #`#successful runs (/10)` = no_runs,
+    Runtime = eval_time,
+    `#Evaluations until first stopping criterion` = eval_stop,
+    `#Evaluations until second stopping criterion` = eval_stop_full,
+    # `y_min after first stop` = min_y_stop,
+    `True error after first stop` = min_y_stop_perc
+  ) %>%
+  readr::write_csv(here("output", "goldpr_summary.csv"))
+
+hart3_res %>%
+  group_by(cor_family, bayesian_fit, bayesian_method) %>%
+  mutate(no_perc_ind = sum(perc_ind > 0, na.rm = TRUE),
+         no_runs = n()) %>%
+  summarise(across(c(group_id, no_runs, eval_stop, eval_stop_full, min_y_stop, min_y_stop_perc, no_perc_ind, perc_ind, eval_time), 
+                   # ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")")
+                   list(median = ~median(.x, na.rm = TRUE),
+                        q0.25 = ~quantile(.x, .25, na.rm = TRUE),
+                        q0.75 = ~quantile(.x, .75, na.rm = TRUE)
+                   )
+  )) %>%
+  ungroup() %>%
+  transmute(group_id = group_id_median,
+            cor_family = cor_family,
+            bayesian_fit = bayesian_fit,
+            bayesian_method = bayesian_method,
+            no_runs = no_runs_median,
+            eval_stop = paste0(scales::comma(eval_stop_median, accuracy = 0.01), " (", scales::comma(eval_stop_q0.25, accuracy = 0.01), " - ", scales::comma(eval_stop_q0.75, accuracy = 0.01), ")"),
+            eval_stop_full = paste0(scales::comma(eval_stop_full_median, accuracy = 0.01), " (", scales::comma(eval_stop_full_q0.25, accuracy = 0.01), " - ", scales::comma(eval_stop_full_q0.75, accuracy = 0.01), ")"),
+            no_perc_ind = paste0(no_perc_ind_median, " (", no_perc_ind_q0.25, " - ", no_perc_ind_q0.75, ")"),
+            perc_ind = paste0(perc_ind_median, " (", perc_ind_q0.25, " - ", perc_ind_q0.75, ")"),
+            eval_time = paste0(scales::comma(eval_time_median, accuracy = 0.1), " (", scales::comma(eval_time_q0.25, accuracy = 0.1), " - ", scales::comma(eval_time_q0.75, accuracy = 0.1), ")"),
+            min_y_stop = paste0(scales::comma(min_y_stop_median, accuracy = 0.001), " (", scales::comma(min_y_stop_q0.25, accuracy = 0.001), " - ", scales::comma(min_y_stop_q0.75, accuracy = 0.001), ")"),
+            min_y_stop_perc = paste0(scales::percent(min_y_stop_perc_median, accuracy = 0.01), " (", scales::percent(min_y_stop_perc_q0.25, accuracy = 0.01), " - ", scales::percent(min_y_stop_perc_q0.75, accuracy = 0.01), ")"),
+            # (c(no_runs, eval_stop, eval_stop_full, no_perc_ind, perc_ind),
+            #        ~paste0(median(.x, na.rm = TRUE), " (", quantile(.x, .25, na.rm = TRUE), " - ", quantile(.x, .75, na.rm = TRUE), ")"))
+  ) %>%
+  arrange(bayesian_fit) %>%
+  dplyr::select(#Correlation = cor_family,
+    #`Bayesian Fit` = bayesian_fit,
+    #`Bayesian Method` = bayesian_method,
+    `Type` = group_id,
+    #`#successful runs (/10)` = no_runs,
+    Runtime = eval_time,
+    `#Evaluations until first stopping criterion` = eval_stop,
+    `#Evaluations until second stopping criterion` = eval_stop_full,
+    # `y_min after first stop` = min_y_stop,
+    `True error after first stop` = min_y_stop_perc
+  ) %>%
+  readr::write_csv(here("output", "hart3_summary.csv"))
